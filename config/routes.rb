@@ -4,7 +4,11 @@ Rails.application.routes.draw do
   resources :users
   resources :tests
 
-  resources :posts do
+  resources :posts,shallow: true do
+    member do
+      patch "upvote", to: "posts#upvote"
+      patch "downvote", to: "posts#downvote"
+    end
     resources :comments
   end
 

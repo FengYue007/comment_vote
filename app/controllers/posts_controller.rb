@@ -1,12 +1,31 @@
 class PostsController < ApplicationController
-  before_action :find_post, only: [:show, :edit, :update, :destroy]
-  before_action :authenticate_user!, except: [:index, :show]
+  before_action :find_post, only: [:show, :edit, :update, :destroy, :upvote, :downvote]
+  before_action :authenticate_user!, except: [:index, :show, :vote]
+ 
+  def index
+    @post = Post.all
+  end
 
-  def  index
-    @post = Post.all.order("created_at DESC")
+  def upvote
+    if current_user.voted_up_on? @post
+      @post.liked_by current_user
+    else
+      @post.unlike_by current_user
+    end
+    render "vote.js.erb"
+  end
+
+  def downvote
+    if current_user.voted_down_on? @post
+      @post.like_by current_user
+    else
+      @post.unlike_by current_user
+    end
+    render "vote.js.erb"
   end
 
   def show 
+
   end
 
   def new
@@ -26,11 +45,7 @@ class PostsController < ApplicationController
   end
 
   def update
-    if @post.update(post_params)
-      redirect_to post_path(@post)
-    else
-      render 'edit'
-    end
+
   end
   
   def destroy
@@ -38,13 +53,14 @@ class PostsController < ApplicationController
     redirect_to posts_path
   end
   
-  def find_post
-    @post = Post.find(params[:id])
-  end
+
 
   private
-
   def post_params
     params.require(:post).permit(:title, :content)
+  end
+
+  def find_post
+    @post = Post.find(params[:id])
   end
 end
